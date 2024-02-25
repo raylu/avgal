@@ -1,2 +1,3 @@
 imageio
 pillow-avif-plugin
+rawpy

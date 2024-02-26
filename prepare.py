@@ -18,8 +18,9 @@ if typing.TYPE_CHECKING:
 def main():
 	path = pathlib.Path(sys.argv[1])
 	imageio.plugins.freeimage.download()
-	for raw in path.glob('*.CR2'):
-		process_image(raw)
+	for raw in path.iterdir():
+		if raw.suffix.casefold() in ('.cr2', '.jpg'):
+			process_image(raw)
 
 def process_image(raw: pathlib.Path) -> None:
 	print(raw)

@@ -31,28 +31,25 @@ def process_image(raw: pathlib.Path) -> None:
 		return
 
 	if raw.suffix.casefold() == '.cr2':
-		img = rawpy.imread(str(raw)).postprocess(use_camera_wb=True)
+		array = rawpy.imread(str(raw)).postprocess(use_camera_wb=True)
 	else:
-		img = iio.imread(raw)
-	max_dim = min(img.shape[:2])
+		array = iio.imread(raw)
+	img = PIL.Image.fromarray(array)
+
+	max_dim = min(array.shape[:2])
 	scale_factor = 1
 	while max_dim // scale_factor > 3000:
 		scale_factor *= 2
 	if scale_factor > 1:
-		scaled = scale(img, scale_factor)
+		dim = (int(array.shape[0] / scale_factor), int(array.shape[1] / scale_factor))
+		print('\t', array.shape[:2], '→', dim)
+		scaled = img.resize(reversed(dim), PIL.Image.Resampling.BICUBIC)
 		scaled.save(avif_path)
 	else:
-		iio.imwrite(avif_path, img)
+		iio.imwrite(avif_path, array)
 
-	min_dim = min(img.shape[:2])
-	scale_factor = min_dim / 200
-	thumbnail = scale(img, scale_factor)
-	thumbnail.save(thumb_path)
-
-def scale(img: numpy.ndarray, scale_factor: float) -> PIL.Image:
-	dim = (int(img.shape[0] / scale_factor), int(img.shape[1] / scale_factor))
-	print('\t', img.shape[:2], '→', dim)
-	return PIL.Image.fromarray(img).resize(reversed(dim))
+	img.thumbnail((400, 400))
+	img.save(thumb_path)
 
 
 if __name__ == '__main__':

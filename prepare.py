@@ -4,16 +4,12 @@ from __future__ import annotations
 
 import pathlib
 import sys
-import typing
 
 import imageio.v3 as iio
 import imageio.plugins.freeimage
 import PIL.Image
 import pillow_avif  # type: ignore # noqa: F401
 import rawpy # type: ignore
-
-if typing.TYPE_CHECKING:
-	import numpy
 
 def main():
 	path = pathlib.Path(sys.argv[1])

@@ -15,7 +15,7 @@ def main():
 	path = pathlib.Path(sys.argv[1])
 	imageio.plugins.freeimage.download()
 	for raw in path.iterdir():
-		if raw.suffix.casefold() in ('.cr2', '.jpg'):
+		if raw.suffix.casefold() in ('.cr2', '.jpg', '.tif'):
 			process_image(raw)
 
 def process_image(raw: pathlib.Path) -> None:

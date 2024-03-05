@@ -32,14 +32,13 @@ def process_image(raw: pathlib.Path) -> None:
 		array = iio.imread(raw)
 	img = PIL.Image.fromarray(array)
 
-	max_dim = min(array.shape[:2])
+	max_dim = max(array.shape[:2])
 	scale_factor = 1
 	while max_dim // scale_factor > 3000:
 		scale_factor *= 2
 	if scale_factor > 1:
-		dim = (int(array.shape[0] / scale_factor), int(array.shape[1] / scale_factor))
-		print('\t', array.shape[:2], '→', dim)
-		scaled = img.resize(reversed(dim), PIL.Image.Resampling.BICUBIC)
+		scaled = img.reduce(scale_factor)
+		print('\t', (array.shape[1], array.shape[0]), '→', scaled.size)
 		scaled.save(avif_path)
 	else:
 		iio.imwrite(avif_path, array)

@@ -9,13 +9,16 @@ import imageio.v3 as iio
 import imageio.plugins.freeimage
 import PIL.Image
 import pillow_avif  # type: ignore # noqa: F401
+import pi_heif
 import rawpy # type: ignore
 
 def main():
-	path = pathlib.Path(sys.argv[1])
 	imageio.plugins.freeimage.download()
+	pi_heif.register_heif_opener()
+
+	path = pathlib.Path(sys.argv[1])
 	for raw in path.iterdir():
-		if raw.suffix.casefold() in ('.cr2', '.jpg', '.tif'):
+		if raw.suffix.casefold() in ('.cr2', '.heic', '.jpg', '.tif'):
 			process_image(raw)
 
 def process_image(raw: pathlib.Path) -> None:

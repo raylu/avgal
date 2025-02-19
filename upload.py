@@ -5,6 +5,7 @@ import dataclasses
 import io
 import json
 import pathlib
+import typing
 
 import boto3
 import rtoml
@@ -12,11 +13,9 @@ import rtoml
 def main() -> None:
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--dst', required=True, help='dir in the bucket to upload to')
-	parser.add_argument('paths', nargs='+', type=pathlib.Path, help='file paths to upload')
+	parser.add_argument('paths', nargs='+', type=pathlib.Path, help='file paths or directory to upload')
 	args = Args(**vars(parser.parse_args()))
-	assert all(p.suffix == '.avif' for p in args.paths)
-	assert all(p.exists() for p in args.paths)
-	assert all((p.parent / f'{p.stem}-thumb{p.suffix}').exists() for p in args.paths)
+	paths = resolve_paths(args.paths)
 
 	config = rtoml.load(pathlib.Path('config.toml'))
 
@@ -28,7 +27,7 @@ def main() -> None:
 	files: list[str] = json.load(files_obj.get()['Body'])
 	print(f'got {files_obj.key} with {len(files)} files')
 
-	for p in args.paths:
+	for p in paths:
 		print(f'uploading to {args.dst}/{p.name}')
 		bucket.Object(f'{args.dst}/{p.name}').upload_file(str(p))
 		thumb_path = p.parent / f'{p.stem}-thumb{p.suffix}'
@@ -38,6 +37,14 @@ def main() -> None:
 	files.sort()
 	print(f'updating {files_obj.key} with {len(files)} files')
 	files_obj.upload_fileobj(io.BytesIO(json.dumps(files).encode('utf-8')))
+
+def resolve_paths(paths: typing.Sequence[pathlib.Path]) -> typing.Sequence[pathlib.Path]:
+	if len(paths) == 1 and paths[0].is_dir():
+		paths = [p for p in paths[0].glob('*.avif') if not p.name.endswith('-thumb.avif')]
+	assert all(p.suffix == '.avif' for p in paths)
+	assert all(p.exists() for p in paths)
+	assert all((p.parent / f'{p.stem}-thumb{p.suffix}').exists() for p in paths)
+	return paths
 
 @dataclasses.dataclass
 class Args:

@@ -18,7 +18,7 @@ def main():
 
 	path = pathlib.Path(sys.argv[1])
 	for raw in path.iterdir():
-		if raw.suffix.casefold() in ('.cr2', '.heic', '.jpg', '.tif'):
+		if raw.suffix.casefold() in ('.avif', '.cr2', '.heic', '.jpg', '.tif'):
 			process_image(raw)
 
 def process_image(raw: pathlib.Path) -> None:
